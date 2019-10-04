@@ -1,0 +1,47 @@
+plugins {
+    id 'java-library'
+    id 'application'
+    id 'com.palantir.docker' version '0.22.1'
+    id 'com.palantir.docker-run' version '0.22.1'
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
+}
+
+test {
+    useJUnitPlatform()
+
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+mainClassName = 'demo.docker.HelloWorld'
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': mainClassName
+        )
+    }
+}
+
+def imageId = 'demo.docker/demo-docker:1'
+
+docker {
+    name imageId
+    dockerfile file('src/main/resources/Dockerfile')
+    files tasks.jar.outputs
+    dependsOn tasks.jar
+}
+
+dockerRun {
+    name 'demo-docker-container'
+    image imageId
+}
